@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import Moveable from "react-moveable";
 import axios from "axios";
 const API = "https://jsonplaceholder.typicode.com/photos";
@@ -55,20 +55,7 @@ const App = () => {
       console.log("nada seleccionado")
     }
 
-    // Create a new moveable component and add it to the array
-    // setMoveableComponents([
-    //   ...moveableComponents,
-    // selected
-    //   {
-    //     id: Math.floor(Math.random() * Date.now()),
-    //     top: 0,
-    //     left: 0,
-    //     width: 100,
-    //     height: 100,
-    //     color: photo.url,
-    //     updateEnd: true,
-    //   },
-    // ]);
+
   };
 
   const updateMoveable = (
@@ -77,8 +64,7 @@ const App = () => {
     updateEnd = false,
     parentBounds = false
   ) => {
-    // console.log('newComponent: ', newComponent);
-    // console.log('parentBounds: ', parentBounds);
+
     //Bounds on Y
     let componentY;
     const realTop = parentBounds.height - newComponent.height;
@@ -102,10 +88,6 @@ const App = () => {
       componentX = newComponent.left;
     }
     newComponent.left = componentX;
-    // newComponent.top > 0  ? newComponent.top : 0
-
-    // console.log('parentBounds: ', parentBounds);
-    // console.log('id, newComponent, updateEnd: ', id, newComponent, updateEnd, selected);
 
     const updatedMoveables = moveableComponents.map((moveable, i) => {
       if (moveable.id === id) {
@@ -193,7 +175,6 @@ const Component = ({
 
   let parent = document.getElementById("parent");
   let parentBounds = parent?.getBoundingClientRect();
-  // console.log("ll",parentBounds)
 
   const onResize = async (e) => {
     // ACTUALIZAR ALTO Y ANCHO
@@ -201,9 +182,7 @@ const Component = ({
     let newHeight = e.height;
 
     const positionMaxTop = top + newHeight;
-    // console.log('positionMaxTop: ', positionMaxTop);
     const positionMaxLeft = left + newWidth;
-    // console.log('positionMaxLeft: ', positionMaxLeft);
 
     if (positionMaxTop > parentBounds?.height)
       newHeight = parentBounds?.height - top;
@@ -222,12 +201,10 @@ const Component = ({
 
     ref.current.style.width = `${e.width}px`;
     ref.current.style.height = `${e.height}px`;
-    // console.log('beforeTranslate: ', beforeTranslate);
 
     let translateX = beforeTranslate[0];
     let translateY = beforeTranslate[1];
 
-    // console.log('translateX: ', translateX);
     ref.current.style.transform = `translate(${translateX}px, ${translateY}px)`;
 
     setNodoReferencia({
