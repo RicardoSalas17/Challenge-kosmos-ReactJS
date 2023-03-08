@@ -1,14 +1,27 @@
 import React, { useRef, useState, useEffect } from "react";
 import Moveable from "react-moveable";
+import axios from "axios";
+const API = "https://jsonplaceholder.typicode.com/photos"
 
 const App = () => {
   const [moveableComponents, setMoveableComponents] = useState([]);
   const [selected, setSelected] = useState(null);
 
-  const addMoveable = () => {
-    // Create a new moveable component and add it to the array
-    const COLORS = ["red", "blue", "yellow", "green", "purple"];
+  const apiService = axios.create({
+    baseURL: `${API}`,
+  });
+  function getPhoto (randomPhoto) {
+   return apiService
+     .get(`/${randomPhoto}`)
+     .then(photo=>photo.data)
+     .catch(error=>error);
+ }
 
+
+  const addMoveable =async () => {
+    // Create a new moveable component and add it to the array
+   const randomPhoto= Math.floor(Math.random()*5000)
+    const photo = await getPhoto(randomPhoto)
     setMoveableComponents([
       ...moveableComponents,
       {
@@ -17,13 +30,48 @@ const App = () => {
         left: 0,
         width: 100,
         height: 100,
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        color:photo.url,
         updateEnd: true
       },
     ]);
   };
 
-  const updateMoveable = (id, newComponent, updateEnd = false) => {
+  const updateMoveable = (id, newComponent,  updateEnd = false, parentBounds = false ) => {
+    console.log('newComponent: ', newComponent);
+    // console.log('parentBounds: ', parentBounds);
+      //Bounds on Y
+    let componentY;
+    const realTop=parentBounds.height-newComponent.height;
+    if(newComponent.top < 0){
+      componentY = 0;
+    }
+    else if(newComponent.top > realTop){
+      componentY = realTop;
+    }
+    else{
+      componentY=newComponent.top;
+    }
+    newComponent.top= componentY;
+
+    //Bounds on X
+    let componentX
+    const realLeft=parentBounds.width-newComponent.width
+    if(newComponent.left < 0){
+      componentX = 0
+    }
+    else if(newComponent.left > realLeft){
+      componentX = realLeft
+    }
+    else{
+      componentX=newComponent.left
+    }
+    newComponent.left= componentX
+    // newComponent.top > 0  ? newComponent.top : 0
+    
+  
+    // console.log('parentBounds: ', parentBounds);
+    // console.log('id, newComponent, updateEnd: ', id, newComponent, updateEnd, selected);
+
     const updatedMoveables = moveableComponents.map((moveable, i) => {
       if (moveable.id === id) {
         return { id, ...newComponent, updateEnd };
@@ -110,7 +158,8 @@ const Component = ({
 
   let parent = document.getElementById("parent");
   let parentBounds = parent?.getBoundingClientRect();
-  
+  // console.log("ll",parentBounds)
+
   const onResize = async (e) => {
     // ACTUALIZAR ALTO Y ANCHO
     let newWidth = e.width;
@@ -123,13 +172,13 @@ const Component = ({
       newHeight = parentBounds?.height - top;
     if (positionMaxLeft > parentBounds?.width)
       newWidth = parentBounds?.width - left;
-
+      console.log('3');
     updateMoveable(id, {
       top,
       left,
       width: newWidth,
       height: newHeight,
-      color,
+      color
     });
 
     // ACTUALIZAR NODO REFERENCIA
@@ -170,7 +219,7 @@ const Component = ({
 
     const absoluteTop = top + beforeTranslate[1];
     const absoluteLeft = left + beforeTranslate[0];
-
+    console.log('2');
     updateMoveable(
       id,
       {
@@ -178,7 +227,7 @@ const Component = ({
         left: absoluteLeft,
         width: newWidth,
         height: newHeight,
-        color,
+        color
       },
       true
     );
@@ -196,7 +245,8 @@ const Component = ({
           left: left,
           width: width,
           height: height,
-          background: color,
+          backgroundImage:`url(${color})`
+          // background: color,
         }}
         onClick={() => setSelected(id)}
       />
@@ -205,6 +255,9 @@ const Component = ({
         target={isSelected && ref.current}
         resizable
         draggable
+        // bounds={parentBounds}
+        // clipTargetBounds
+        bounds={{ "left": 0,"right": 80, "top":  0, "bottom": 80}}
         onDrag={(e) => {
           updateMoveable(id, {
             top: e.top,
@@ -212,7 +265,7 @@ const Component = ({
             width,
             height,
             color,
-          });
+          },false,parentBounds);
         }}
         onResize={onResize}
         onResizeEnd={onResizeEnd}
